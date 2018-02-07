@@ -1,0 +1,55 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Video;
+
+public class Slideshow : MonoBehaviour {
+
+    //button that advances to the next slide
+    public Button nextButton;
+
+    //image component that we will be "projecting" onto
+    public RawImage screen;
+
+    //holds all the "powerpoint" slides loaded from assets
+    private Texture2D[] slideBuffer;
+
+    //paths used to point to the images to be projected onto the screen
+    private string path = "Assets/Slideshow/";
+    private string pathPrefix = @"file://";
+
+    private static int index = 0;
+
+    void Start () {
+        StartCoroutine(loadSlides());
+	}
+
+    //loads slides from the path into the game
+    private IEnumerator loadSlides() {
+        string[] files = System.IO.Directory.GetFiles(path, "*.png");
+        slideBuffer = new Texture2D[files.Length];
+        int i = 0;
+        foreach (string tString in files) {
+            string imgPath = pathPrefix + tString;
+            Debug.Log(imgPath);
+            WWW www = new WWW(imgPath);
+            yield return www;
+
+            Texture2D imgTexture = new Texture2D(800, 600, TextureFormat.DXT1, false);
+            www.LoadImageIntoTexture(imgTexture);
+            slideBuffer[i] = imgTexture;
+            i++;
+        }
+    }
+
+    //when the button is pressed, this function is triggered
+    //advances the image on the screen to the next one
+    public void next() {
+        screen.texture = slideBuffer[index];
+        index++;
+        if (index >= slideBuffer.Length) {
+            index = 0;
+        }
+    }
+}
